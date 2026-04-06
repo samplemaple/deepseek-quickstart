@@ -19,3 +19,5 @@ pymilvus[model]==2.5.10
 torch==2.7.0
 # CPU版本
 # torch==2.7.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+
+python-dotenv==1.2.2
