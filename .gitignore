@@ -181,3 +181,7 @@ deepseek/api/milvus_docs/*
 mcp/dev*
 a2a/*
 .DS_Store
+
+.kiro/*
+*.log
+volumes/
