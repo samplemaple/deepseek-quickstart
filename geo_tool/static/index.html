@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小红书GEO内容二创工具</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f7;color:#333}
+.container{max-width:1000px;margin:0 auto;padding:20px}
+h1{text-align:center;margin:20px 0 8px;font-size:24px;color:#1a1a1a}
+.subtitle{text-align:center;color:#888;margin-bottom:24px;font-size:14px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.tabs{display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #ddd}
+.tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;background:#f8f9fa;border:none;transition:all 0.2s}
+.tab.on{background:#ff4757;color:#fff}
+.panel{display:none}.panel.on{display:block}
+input[type=text],textarea{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none;margin-bottom:8px}
+input:focus,textarea:focus{border-color:#ff4757}
+textarea{font-size:13px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.row select{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.btn{padding:10px 28px;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+.btn-go{background:#ff4757;color:#fff}.btn-go:hover{background:#e8414f}.btn-go:disabled{background:#ccc;cursor:not-allowed}
+.log{background:#1e1e1e;border-radius:12px;padding:16px;margin-bottom:16px;max-height:400px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.7;color:#d4d4d4}
+.step{background:#fff;border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.step-hd{display:flex;align-items:center;gap:10px;cursor:pointer}
+.dot{width:10px;height:10px;border-radius:50%;background:#ddd}
+.step-bd{margin-top:10px;display:none}
+.step-bd.open{display:block}
+.step-bd pre{background:#f8f9fa;border-radius:8px;padding:12px;font-size:11px;overflow:auto;max-height:300px;white-space:pre-wrap;word-break:break-all;line-height:1.5}
+.art{background:#fff;border-radius:12px;padding:20px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.art h2{font-size:17px;margin-bottom:12px}
+.art-body{line-height:1.8;font-size:14px}
+.art-body h1,.art-body h2,.art-body h3{margin:14px 0 6px}
+.art-body table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12px}
+.art-body th,.art-body td{border:1px solid #ddd;padding:6px 10px;text-align:left}
+.art-body th{background:#f5f5f5}
+.copy-btn{margin-top:10px;padding:8px 18px;background:#2ed573;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+.bm-link{display:inline-block;padding:8px 20px;background:#ff4757;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;cursor:grab}
+.img-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.img-preview img{width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #eee}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔥 小红书GEO内容二创工具</h1>
+  <p class="subtitle">三种方式获取笔记内容 → 自动完成关键词分析、内容二创、质量评分、平台适配</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab on" onclick="sw(0)">📝 粘贴内容</button>
+      <button class="tab" onclick="sw(1)">🔗 链接提取</button>
+      <button class="tab" onclick="sw(2)">🔖 一键提取</button>
+    </div>
+
+    <div class="panel on" id="p0">
+      <div style="font-size:12px;color:#888;margin-bottom:10px">从小红书笔记页面复制标题和正文粘贴到下方</div>
+      <input type="text" id="mTitle" placeholder="笔记标题" />
+      <textarea id="mText" rows="5" placeholder="笔记正文（包括话题标签）..."></textarea>
+      <div style="font-size:12px;color:#888;margin-top:4px">图片URL（可选，每行一个）：</div>
+      <textarea id="mImgs" rows="2" placeholder="https://sns-webpic-qc.xhscdn.com/...&#10;https://sns-webpic-qc.xhscdn.com/..." style="font-size:11px"></textarea>
+    </div>
+
+    <div class="panel" id="p1">
+      <div style="font-size:12px;color:#f44;margin-bottom:10px">⚠️ 云服务器受小红书反爬限制，成功率较低。推荐使用「粘贴内容」或「一键提取」</div>
+      <input type="text" id="urlInput" placeholder="粘贴小红书笔记链接..." />
+    </div>
+
+    <div class="panel" id="p2">
+      <div style="background:#f0f7ff;border-radius:8px;padding:16px;font-size:13px;line-height:1.8">
+        <p style="font-weight:600;margin-bottom:8px">📖 使用方法（一次配置，永久使用）：</p>
+        <p>1. 把下面的按钮 <b>拖到浏览器书签栏</b>（或右键 → 添加到书签）：</p>
+        <p style="margin:12px 0"><a id="bmLink" class="bm-link" href="#">📌 GEO提取</a></p>
+        <p>2. 打开任意小红书笔记页面</p>
+        <p>3. 点击书签栏中的「GEO提取」</p>
+        <p>4. 自动提取标题、正文、图片 → POST到服务器 → 跳转到本页面自动填入</p>
+        <p style="margin-top:10px;color:#888;font-size:11px">原理：提取脚本在你的浏览器中执行（已登录小红书），数据通过加密接口中转，不暴露提取逻辑。</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <select id="tplType"><option value="">自动推荐模板</option><option value="ranking">榜单式</option><option value="review">评测类</option><option value="guide">攻略类</option><option value="comparison">对比类</option><option value="case_study">案例类</option></select>
+      <select id="bizType"><option value="">不生成转化策略</option><option value="online">线上业务</option><option value="local">本地业务</option></select>
+      <select id="plat"><option value="doubao">豆包</option><option value="deepseek">DeepSeek</option><option value="baidu_ai">百度AI搜索</option><option value="yuanbao">腾讯元宝</option></select>
+      <button class="btn btn-go" id="goBtn" onclick="run()">🚀 开始二创</button>
+    </div>
+  </div>
+
+  <div class="log" id="logEl"><div style="color:#569cd6">📋 日志面板</div></div>
+  <div id="stepsEl"></div>
+  <div id="artEl"></div>
+</div>
+
+<script>
+const API='/api/v1', logEl=document.getElementById('logEl'), stepsEl=document.getElementById('stepsEl');
+let tab=0;
+
+// Bookmarklet: 设置全局变量后加载远程 JS
+// 如果小红书 CSP 阻止外部脚本，备选方案用 fetch 加载后 eval
+const _ORIGIN = location.origin;
+const bmJS = `javascript:void((function(){window.__GEO_ORIGIN__='${_ORIGIN}';var s=document.createElement('script');s.src='${_ORIGIN}/static/x.js?t='+Date.now();s.onerror=function(){fetch('${_ORIGIN}/static/x.js').then(function(r){return r.text()}).then(function(c){eval(c)}).catch(function(e){alert('加载失败:'+e.message)})};document.head.appendChild(s)})())`;
+document.getElementById('bmLink').href = bmJS;
+
+// 如果 URL 带 token 参数，从接口获取提取数据并自动填入
+(async function(){
+  const tk = new URLSearchParams(location.search).get('token');
+  if (!tk) return;
+  // 防止重复执行
+  if (window.__tokenLoaded) return;
+  window.__tokenLoaded = true;
+  try {
+    const r = await fetch(API+'/client-extract/'+tk);
+    const d = await r.json();
+    console.log('token data:', d);
+    if (d.success && d.data) {
+      document.getElementById('mTitle').value = d.data.title || '';
+      document.getElementById('mText').value = d.data.text || '';
+      if (d.data.image_urls && d.data.image_urls.length > 0) {
+        document.getElementById('mImgs').value = d.data.image_urls.join('\n');
+      }
+      if (d.data.source_url) document.getElementById('urlInput').value = d.data.source_url;
+      sw(0);
+      // 清除 URL 中的 token
+      history.replaceState(null, '', location.pathname);
+      // 在日志面板提示
+      log('\u2705 \u5df2\u901a\u8fc7\u4e00\u952e\u63d0\u53d6\u5de5\u5177\u81ea\u52a8\u586b\u5165\u7b14\u8bb0\u5185\u5bb9\uff0c\u70b9\u51fb\u300c\u5f00\u59cb\u4e8c\u521b\u300d\u5373\u53ef', '#4ec9b0');
+    } else {
+      console.error('token fetch failed:', d);
+    }
+  } catch(e) { console.error('token fetch error:', e); }
+})();
+
+function sw(i){tab=i;document.querySelectorAll('.tab').forEach((e,j)=>e.classList.toggle('on',j===i));document.querySelectorAll('.panel').forEach((e,j)=>e.classList.toggle('on',j===i))}
+function log(m,c){const d=document.createElement('div');d.style.cssText='margin:2px 0;word-break:break-all;color:'+(c||'#d4d4d4');d.textContent='['+new Date().toLocaleTimeString()+'] '+m;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight}
+function logJ(l,o){const s=JSON.stringify(o,null,2);log(l+': '+(s.length>1500?s.slice(0,1500)+'...(截断)':s),'#9cdcfe')}
+function logS(){log('─'.repeat(50),'#555')}
+
+function addSt(id,t){stepsEl.insertAdjacentHTML('beforeend','<div class="step"><div class="step-hd" onclick="this.nextElementSibling.classList.toggle(\'open\')"><div class="dot" id="d-'+id+'"></div><span style="font-size:14px;font-weight:600;flex:1">'+t+'</span><span id="t-'+id+'" style="font-size:11px;color:#aaa"></span></div><div class="step-bd" id="b-'+id+'"><pre id="c-'+id+'"></pre></div></div>')}
+function setD(id,c){document.getElementById('d-'+id).style.background=c}
+function setT(id,ms){document.getElementById('t-'+id).textContent=(ms/1000).toFixed(1)+'s'}
+function setC(id,h){document.getElementById('c-'+id).innerHTML=h;var b=document.getElementById('b-'+id);b.style.display='block';b.classList.add('open')}
+
+async function api(ep,pl){
+  const u=API+'/'+ep;log('→ POST '+u,'#ce9178');logJ('请求体',pl);
+  const t0=Date.now(),ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),180000);
+  try{const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl),signal:ctrl.signal});clearTimeout(tm);const ms=Date.now()-t0,d=await r.json();log('← '+r.status+' 耗时:'+(ms/1000).toFixed(1)+'s',r.ok?'#4ec9b0':'#f44747');logJ('响应体',d);return{data:d,ms}}
+  catch(e){clearTimeout(tm);log('← 错误:'+e.message,'#f44747');throw e}
+}
+
+function md2h(m){return m.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^- (.+)$/gm,'<li>$1</li>').replace(/^\d+\.\s+(.+)$/gm,'<li>$1</li>').replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>')}
+
+async function run(){
+  const mt=document.getElementById('mTitle').value.trim();
+  const mx=document.getElementById('mText').value.trim();
+  const mi=document.getElementById('mImgs').value.trim();
+  const url=document.getElementById('urlInput').value.trim();
+  const manual=tab===0&&mt&&mx;
+  const useUrl=tab===1&&url;
+  if(!manual&&!useUrl){alert(tab===0?'请填写标题和正文':tab===1?'请输入链接':'请先用书签工具提取');return}
+
+  const btn=document.getElementById('goBtn');btn.disabled=true;btn.textContent='⏳ 处理中...';
+  stepsEl.innerHTML='';document.getElementById('artEl').innerHTML='';logEl.innerHTML='';
+  log('🚀 开始GEO内容二创','#569cd6');logS();
+
+  // 解析图片URL
+  const imgUrls = mi ? mi.split('\n').map(s=>s.trim()).filter(s=>s.startsWith('http')) : [];
+
+  let ext,kw,rec,qa;
+  try{
+    // 步骤1
+    addSt('s1','① 内容提取');
+    if(manual){
+      ext={url:url||'manual',text:mt+'\n\n'+mx,image_urls:imgUrls,metadata:{title:mt,author:'用户输入',publish_time:new Date().toISOString(),likes:0,collects:0,comments:0},extracted_at:new Date().toISOString()};
+      setD('s1','#2ed573');
+      let s1h='<b>标题:</b> '+mt+'\n<b>内容:</b>\n'+mx.substring(0,300);
+      if(imgUrls.length>0) s1h+='\n\n<b>图片('+imgUrls.length+'张):</b>\n<div class="img-preview">'+imgUrls.map(u=>'<img src="'+u+'" onerror="this.style.display=\'none\'">').join('')+'</div>';
+      setC('s1',s1h);
+      log('✅ 使用粘贴内容 (图片:'+imgUrls.length+'张)','#4ec9b0');logS();
+    }else{
+      setD('s1','#ffa502');log('调用提取接口...','#569cd6');
+      const r1=await api('extract',{url});setT('s1',r1.ms);
+      if(!r1.data.success){setD('s1','#ff4757');setC('s1','❌ '+r1.data.error+'\n\n💡 请切换到「粘贴内容」或使用「一键提取」');log('❌ 提取失败','#f44747');sw(0);return}
+      ext=r1.data.data;setD('s1','#2ed573');
+      let s1h='<b>标题:</b> '+ext.metadata.title+'\n<b>作者:</b> '+ext.metadata.author+'\n<b>内容:</b>\n'+ext.text.substring(0,300);
+      if(ext.image_urls&&ext.image_urls.length>0) s1h+='\n\n<b>图片('+ext.image_urls.length+'张):</b>\n<div class="img-preview">'+ext.image_urls.map(u=>'<img src="'+u+'" onerror="this.style.display=\'none\'">').join('')+'</div>';
+      setC('s1',s1h);
+      log('✅ 提取成功 (图片:'+ext.image_urls.length+'张)','#4ec9b0');logS();
+    }
+
+    // 步骤2
+    addSt('s2','② 关键词分析');setD('s2','#ffa502');log('调用关键词分析...','#569cd6');
+    const r2=await api('analyze-keywords',{content:ext});setT('s2',r2.ms);
+    if(!r2.data.success){setD('s2','#ff4757');setC('s2','❌ 失败');return}
+    kw=r2.data.data;setD('s2','#2ed573');
+    let kh='核心主题: '+kw.core_topics.join('、')+'\n\n';
+    kw.keywords.forEach((k,i)=>{kh+=(i+1)+'. <b>'+k.word+'</b> ['+k.keyword_type+'] 价值:'+k.business_value+' 长尾:'+k.longtail_variants.length+'个\n'});
+    setC('s2',kh);log('✅ '+kw.keywords.length+'个关键词','#4ec9b0');logS();
+
+    // 步骤3
+    addSt('s3','③ 内容二创');setD('s3','#ffa502');log('调用内容二创...','#569cd6');
+    const p3={content:ext,keywords:kw};
+    const tpl=document.getElementById('tplType').value;const biz=document.getElementById('bizType').value;
+    if(tpl)p3.template_type=tpl;if(biz)p3.business_type=biz;
+    const r3=await api('recreate',p3);setT('s3',r3.ms);
+    if(!r3.data.success){setD('s3','#ff4757');setC('s3','❌ 失败');return}
+    rec=r3.data.data;setD('s3','#2ed573');
+    let rh='模板: '+rec.template_type+' | 正文: '+rec.body.length+'字符\n\n候选标题:\n';
+    rec.titles.forEach((t,i)=>{rh+=(i+1)+'. '+t.text+' ('+t.diagnosis.match_score+'分)\n'});
+    setC('s3',rh);log('✅ '+rec.titles.length+'个标题, '+rec.body.length+'字符','#4ec9b0');logS();
+
+    // 步骤4
+    addSt('s4','④ 质量评分');setD('s4','#ffa502');log('调用质量评分...','#569cd6');
+    const r4=await api('score',{content:rec});setT('s4',r4.ms);
+    if(!r4.data.success){setD('s4','#ff4757');setC('s4','❌ 失败');return}
+    qa=r4.data.data;setD('s4','#2ed573');
+    const lv=qa.quality_level==='excellent'?'优秀':qa.quality_level==='good'?'良好':'需优化';
+    let sh='<b>总分: '+qa.weighted_total+'/100 ('+lv+')</b>\n\n';
+    qa.dimension_scores.forEach(d=>{const c=d.score>=85?'#2ed573':d.score>=70?'#ffa502':'#ff4757';sh+=d.dimension+'('+Math.round(d.weight*100)+'%): <span style="color:'+c+';font-weight:600">'+d.score+'</span>\n'});
+    setC('s4',sh);log('✅ '+qa.weighted_total+'分 ('+lv+')','#4ec9b0');logS();
+
+    // 步骤5
+    addSt('s5','⑤ 平台适配');setD('s5','#ffa502');log('调用平台适配...','#569cd6');
+    const pl=document.getElementById('plat').value;
+    const r5=await api('adapt',{content:rec,platforms:[pl]});setT('s5',r5.ms);
+    if(!r5.data.success){setD('s5','#ff4757');setC('s5','❌ 失败');return}
+    setD('s5','#2ed573');
+    let ah='';r5.data.data.forEach(p=>{ah+='【'+p.platform+'】推荐: '+p.publish_suggestions.recommended_channels.join('、')+'\n'});
+    setC('s5',ah);log('✅ 适配完成','#4ec9b0');logS();
+
+    // 输出文章
+    log('🎉 全部完成！','#4ec9b0');
+    const best=rec.titles[0]?rec.titles[0].text:'文章';
+    document.getElementById('artEl').innerHTML='<div class="art"><h2>📄 生成的GEO优化文章</h2><div style="margin-bottom:10px;padding:8px 12px;background:#f0f7ff;border-radius:8px;font-size:13px"><b>标题:</b> '+best+' | <b>评分:</b> '+qa.weighted_total+'分('+lv+') | <b>模板:</b> '+rec.template_type+'</div><div class="art-body">'+md2h(rec.body)+'</div><button class="copy-btn" onclick="navigator.clipboard.writeText(window._md).then(()=>alert(\'已复制\'))">📋 复制Markdown</button></div>';
+    window._md=rec.body;
+  }catch(e){log('💥 '+e.message,'#f44747');alert('异常: '+e.message)}
+  finally{btn.disabled=false;btn.textContent='🚀 开始二创'}
+}
+</script>
+</body>
+</html>
